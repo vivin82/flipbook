@@ -3,207 +3,68 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Realistic Flipbook</title>
-
-  <!-- ✅ jQuery + Turn.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/blasten/turn.js/turn.min.js"></script>
-
+  <title>Flipbook</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/turn.js@4/turn.min.css">
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     body {
-      font-family: "Poppins", sans-serif;
-      background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80') no-repeat center center/cover;
+      margin: 0;
+      background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e');
+      background-size: cover;
+      background-position: center;
       height: 100vh;
-      overflow: hidden;
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
     }
 
-    /* Flipbook Container */
     #flipbook {
-      width: 70vw;
-      height: 80vh;
-      margin: auto;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      width: 90vw;
+      max-width: 700px;
+      height: 90vh;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
       border-radius: 10px;
       overflow: hidden;
     }
 
-    /* Page Styling */
-    #flipbook .page {
-      background: rgba(255, 255, 255, 0.85);
-      border: none;
+    .page {
+      background: rgba(255, 255, 255, 0.8); /* translucent relative to background */
+      backdrop-filter: blur(4px); /* adds frosted-glass effect */
       display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: stretch;
-      text-align: left;
-      position: relative;
-      overflow: hidden;
-      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.1);
-      background-image: 
-        linear-gradient(to right, rgba(0,0,0,0.05) 49.5%, rgba(255,255,255,0.4) 50%, rgba(0,0,0,0.05) 50.5%);
-      background-size: 100% 100%;
-    }
-
-    /* Left-side Image */
-    .page img {
-      width: 50%;
-      height: 100%;
-      object-fit: cover;
-      border-right: 1px solid rgba(0, 0, 0, 0.1);
-    }
-
-    /* Right-side Text Content */
-    .page-content {
-      width: 50%;
-      padding: 40px;
-      overflow-y: auto;
-      font-size: 18px;
-      color: #222;
-      display: flex;
-      flex-direction: column;
       justify-content: center;
+      align-items: center;
+      font-size: 2em;
+      text-align: center;
+      color: #222;
     }
 
-    .page-content h2 {
-      color: #1b4f72;
-      margin-bottom: 15px;
-    }
-
-    /* Transparent half click zones */
-    .click-zone {
-      position: absolute;
-      top: 0;
-      width: 50%;
-      height: 100%;
-      cursor: pointer;
-      z-index: 20;
-    }
-
-    #leftZone {
-      left: 0;
-    }
-
-    #rightZone {
-      right: 0;
-    }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-      width: 6px;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #ccc;
-      border-radius: 4px;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
+    /* Make it more landscape on mobile */
+    @media (max-width: 600px) {
       #flipbook {
-        width: 90vw;
-        height: 75vh;
+        width: 95vw;
+        height: 65vh;
       }
-
       .page {
-        flex-direction: column;
-      }
-
-      .page img, .page-content {
-        width: 100%;
-        height: 50%;
-      }
-
-      .page-content {
-        padding: 20px;
-        font-size: 16px;
+        font-size: 1.2em;
       }
     }
   </style>
 </head>
 <body>
-
-  <!-- Flipbook -->
   <div id="flipbook">
-
-    <!-- Page 1 -->
-    <div class="page">
-      <img src="https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&w=900&q=80" alt="Cover" />
-      <div class="page-content">
-        <h2>Cover Page</h2>
-        <p>Welcome to your elegant online book. Each page features a clean layout with image and text divided beautifully.</p>
-      </div>
-    </div>
-
-    <!-- Page 2 -->
-    <div class="page">
-      <img src="https://images.unsplash.com/photo-1473181488821-2d23949a045a?auto=format&fit=crop&w=900&q=80" alt="Image 2" />
-      <div class="page-content">
-        <h2>About</h2>
-        <p>This book simulates a physical book experience with smooth page-turn animations and realistic textures.</p>
-      </div>
-    </div>
-
-    <!-- Page 3 -->
-    <div class="page">
-      <img src="https://images.unsplash.com/photo-1517816743773-6e0fd518b4a6?auto=format&fit=crop&w=900&q=80" alt="Image 3" />
-      <div class="page-content">
-        <h2>Chapter 1</h2>
-        <p>Add your own chapters, notes, or even portfolio projects here. Each page can have unique images and descriptions.</p>
-      </div>
-    </div>
-
-    <!-- Page 4 -->
-    <div class="page">
-      <img src="https://images.unsplash.com/photo-1519331379826-f10be5486c6e?auto=format&fit=crop&w=900&q=80" alt="Image 4" />
-      <div class="page-content">
-        <h2>Gallery</h2>
-        <p>Showcase visuals, designs, or captured moments. It’s ideal for presentations, reports, or digital portfolios.</p>
-      </div>
-    </div>
-
-    <!-- Page 5 -->
-    <div class="page">
-      <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80" alt="Image 5" />
-      <div class="page-content">
-        <h2>Conclusion</h2>
-        <p>Thank you for exploring this interactive flipbook. You can easily edit it and deploy your own stories or content here.</p>
-      </div>
-    </div>
+    <div class="page">Page 1</div>
+    <div class="page">Page 2</div>
+    <div class="page">Page 3</div>
+    <div class="page">Page 4</div>
   </div>
 
-  <!-- Clickable Zones -->
-  <div id="leftZone" class="click-zone"></div>
-  <div id="rightZone" class="click-zone"></div>
-
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/turn.js@4/turn.min.js"></script>
   <script>
-    $(document).ready(function () {
-      $("#flipbook").turn({
-        width: "70vw",
-        height: "80vh",
-        autoCenter: true,
-        display: "single",
-        elevation: 50,
-        gradients: true,
-        duration: 1200,
-      });
-
-      // Clickable zones for navigation
-      $("#leftZone").click(function () {
-        $("#flipbook").turn("previous");
-      });
-      $("#rightZone").click(function () {
-        $("#flipbook").turn("next");
-      });
+    $('#flipbook').turn({
+      width: '100%',
+      height: '100%',
+      autoCenter: true
     });
   </script>
 </body>
 </html>
-
