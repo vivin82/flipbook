@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Flipbook</title>
+
+  <!-- ✅ jQuery + Turn.js (reliable CDN) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/blasten/turn.js/turn.min.js"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -12,70 +17,71 @@
     }
 
     body {
-      background-image: url('background.jpg'); /* change to your image */
-      background-size: cover;
-      background-position: center;
+      font-family: "Poppins", sans-serif;
+      background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80') no-repeat center center/cover;
       height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       overflow: hidden;
-      font-family: 'Poppins', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .book {
-      position: relative;
+    #flipbook {
       width: 80vw;
-      max-width: 600px;
       height: 90vh;
-      max-height: 800px;
-      perspective: 2000px;
+      margin: auto;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      border-radius: 10px;
+      background: white;
+      overflow: hidden;
     }
 
-    .page {
-      width: 100%;
-      height: 100%;
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-      position: absolute;
+    #flipbook .page {
+      background: #ffffff;
+      border: none;
       display: flex;
       flex-direction: column;
+      justify-content: flex-start;
       align-items: center;
-      justify-content: center;
-      padding: 20px;
-      backface-visibility: hidden;
-      transition: transform 1s ease;
+      text-align: center;
+      overflow: hidden;
+      position: relative;
     }
 
     .page img {
       width: 100%;
-      height: auto;
-      border-radius: 10px;
+      height: 60%;
+      object-fit: cover;
+      border-bottom: 2px solid #ddd;
+    }
+
+    .page-content {
+      padding: 20px;
+      height: 40%;
+      overflow-y: auto;
+      font-size: 18px;
+      color: #333;
+    }
+
+    .page h2 {
+      color: #1b4f72;
       margin-bottom: 10px;
     }
 
-    .page p {
-      font-size: 1.1em;
-      text-align: center;
-    }
-
-    .page.flipped {
-      transform: rotateY(-180deg);
-    }
-
+    /* Transparent side navigation buttons */
     .nav-btn {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
       background: rgba(0, 0, 0, 0.2);
       border: none;
-      font-size: 2em;
-      color: black;
-      padding: 0.3em 0.4em;
-      cursor: pointer;
+      color: white;
+      font-size: 40px;
+      padding: 10px 20px;
       border-radius: 50%;
-      transition: background 0.3s;
+      cursor: pointer;
+      z-index: 10;
+      transition: 0.3s;
     }
 
     .nav-btn:hover {
@@ -83,82 +89,111 @@
     }
 
     #prevBtn {
-      left: -60px;
+      left: 20px;
     }
 
     #nextBtn {
-      right: -60px;
+      right: 20px;
     }
 
-    /* 📱 Responsive Design */
     @media (max-width: 768px) {
-      body {
-        align-items: flex-start;
-        padding-top: 20px;
-      }
-
-      .book {
+      #flipbook {
         width: 95vw;
-        height: 80vh;
+        height: 85vh;
       }
+      .page-content {
+        font-size: 16px;
+      }
+      .nav-btn {
+        font-size: 30px;
+        padding: 8px 15px;
+      }
+    }
 
-      #prevBtn, #nextBtn {
-        font-size: 1.5em;
-        left: 10px;
-        right: 10px;
-        background: rgba(0, 0, 0, 0.3);
-        color: white;
-      }
-
-      #prevBtn {
-        left: 10px;
-      }
-
-      #nextBtn {
-        right: 10px;
-      }
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 4px;
     }
   </style>
 </head>
 <body>
-  <div class="book">
-    <div class="page" id="page1">
-      <img src="cover1.jpg" alt="Cover 1">
-      <p>Welcome to the first page of your booklet!</p>
+
+  <!-- Flipbook -->
+  <div id="flipbook">
+
+    <!-- Page 1 -->
+    <div class="page">
+      <img src="https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&w=900&q=80" alt="Cover Image" />
+      <div class="page-content">
+        <h2>Cover Page</h2>
+        <p>Welcome to my immersive full-screen flipbook! This layout focuses on one page at a time for a cleaner reading experience.</p>
+      </div>
     </div>
-    <div class="page" id="page2">
-      <img src="cover2.jpg" alt="Cover 2">
-      <p>This is your second page with text and image.</p>
+
+    <!-- Page 2 -->
+    <div class="page">
+      <img src="https://images.unsplash.com/photo-1473181488821-2d23949a045a?auto=format&fit=crop&w=900&q=80" alt="Page 2 Image" />
+      <div class="page-content">
+        <h2>About This Book</h2>
+        <p>This flipbook is designed for both laptops and mobile devices. You can navigate using the side arrows or swipe on touchscreens.</p>
+      </div>
     </div>
-    <div class="page" id="page3">
-      <img src="cover3.jpg" alt="Cover 3">
-      <p>Here’s another page — you can add your own content here.</p>
+
+    <!-- Page 3 -->
+    <div class="page">
+      <img src="https://images.unsplash.com/photo-1517816743773-6e0fd518b4a6?auto=format&fit=crop&w=900&q=80" alt="Page 3 Image" />
+      <div class="page-content">
+        <h2>Chapter 1</h2>
+        <p>Start writing your story, report, or presentation here. Replace these texts and images with your own content.</p>
+      </div>
     </div>
+
+    <!-- Page 4 -->
+    <div class="page">
+      <img src="https://images.unsplash.com/photo-1519331379826-f10be5486c6e?auto=format&fit=crop&w=900&q=80" alt="Page 4 Image" />
+      <div class="page-content">
+        <h2>Gallery</h2>
+        <p>Display visuals, charts, or photos with brief descriptions. The page layout is flexible for any type of content.</p>
+      </div>
+    </div>
+
+    <!-- Page 5 -->
+    <div class="page">
+      <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80" alt="Page 5 Image" />
+      <div class="page-content">
+        <h2>Conclusion</h2>
+        <p>Thank you for reading! This final page can include acknowledgments, references, or closing thoughts.</p>
+      </div>
+    </div>
+
   </div>
 
-  <button class="nav-btn" id="prevBtn">⬅</button>
-  <button class="nav-btn" id="nextBtn">➡</button>
+  <!-- Transparent side arrows -->
+  <button id="prevBtn" class="nav-btn">❮</button>
+  <button id="nextBtn" class="nav-btn">❯</button>
 
   <script>
-    const pages = document.querySelectorAll('.page');
-    const nextBtn = document.getElementById('nextBtn');
-    const prevBtn = document.getElementById('prevBtn');
-    let current = 0;
-
-    function updatePages() {
-      pages.forEach((page, index) => {
-        page.style.transform = index <= current ? "rotateY(-180deg)" : "rotateY(0deg)";
+    $(document).ready(function () {
+      $("#flipbook").turn({
+        width: "80vw",
+        height: "90vh",
+        autoCenter: true,
+        display: "single", // ✅ show only one page
+        elevation: 50,
+        gradients: true,
+        duration: 1200,
       });
-    }
 
-    nextBtn.addEventListener('click', () => {
-      if (current < pages.length - 1) current++;
-      updatePages();
-    });
-
-    prevBtn.addEventListener('click', () => {
-      if (current > 0) current--;
-      updatePages();
+      // Button navigation
+      $("#prevBtn").click(function () {
+        $("#flipbook").turn("previous");
+      });
+      $("#nextBtn").click(function () {
+        $("#flipbook").turn("next");
+      });
     });
   </script>
 </body>
