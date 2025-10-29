@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Interactive 3D Realistic Flipbook</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/blasten/turn.js/turn.min.js"></script>
+
+  <style>
+    /* BASE STYLES */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html,body { height: 100%; }
+
+    body {
+      font-family: "Playfair Display", serif;
+      background: url('images/1.jpg')center/cover no-repeat fixed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    #book-wrapper {
+      /* Base size for the isometric view */
+      width: 450px; 
+      height: 650px; 
+      position: relative;
+      perspective: 2200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 1.5s ease-in-out; 
+    }
+
+    #flipbook {
+      width: 400px;
+      height: 600px;
+      min-width: 400px; 
+      background: #FFF; 
+      position: relative;
+      z-index: 30;
+      transform-style: preserve-3d;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: all 1.5s ease-in-out;
+    }
+    
+    /* Pages and Content */
+    #flipbook .page {
+      background: linear-gradient(180deg, rgba(255,255,250,0.98), rgba(250,250,245,0.98));
+      border-radius: 4px;
+      box-shadow: inset 0 0 22px rgba(0,0,0,0.04);
+      overflow: hidden;
+      position: relative;
+      opacity: 0; /* Hidden until cover or open state */
+    }
+
+    /* Spine and Shadow */
+    #book-spine {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%,-50%);
+      width: 2%;
+      height: 90%;
+      background: linear-gradient(90deg, rgba(30,30,30,0.28) 0%, rgba(50,50,50,0.12) 50%, rgba(30,30,30,0.28) 100%);
+      z-index: 25;
+      border-radius: 6px;
+      box-shadow: inset 0 0 18px rgba(0,0,0,0.45);
+      pointer-events: none;
+      opacity: 0; 
+      transition: opacity 1.5s ease-in-out;
+    }
+    
+    .page .page-inner { display: flex; inset: 0; position: absolute; }
+    .left-area, .right-area { width: 50%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+    .text-block { padding: 40px 36px; max-height: 100%; overflow-y: auto; text-align: left; }
+    .text-block h2 { margin-bottom: 12px; color: #184a6b; }
+    
+    /* Navigation Zones (Now positioned absolutely within the wrapper) */
+    .nav-zone { 
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 20%;
+      z-index: 40; /* Above the book but inside the wrapper */
+      opacity: 0; 
+      pointer-events: none; 
+      transition: opacity 0.8s;
+      cursor: pointer;
+    }
+    #nav-left { left: 0; }
+    #nav-right { right: 0; }
+
+
+    /* ================================================= */
+    /* === STATE 1: FLAT (Isometric View) === */
+    /* ================================================= */
+
+    #book-wrapper[data-state="flat"] {
+        cursor: pointer;
+        width: 450px; 
+        height: 650px; 
+    }
+    
+    #book-wrapper[data-state="flat"] #flipbook {
+        transform: rotate(-45deg) skewX(10deg) scale(.8); 
+        box-shadow: -50px 50px 50px rgba(0, 0, 0, 0.5); 
+        border-left: 30px solid #FF2929; 
+        border-radius: 0;
+        padding: 30px; 
+    }
+    
+    /* Isometric Side Edges */
+    #book-wrapper[data-state="flat"] #flipbook:before {
+        content: "";
+        width: 30px;
+        height: 100%;
+        background: #8a0e0e; 
+        position: absolute;
+        top: 0; left: 0;
+        transform: skewY(-45deg) translate(-57px, -43px);
+        z-index: 100; 
+    }
+    #book-wrapper[data-state="flat"] #flipbook:after {
+        content: "";
+        width: 106%;
+        height: 30px;
+        background: #CCC; 
+        position: absolute;
+        bottom: 0; left: 0;
+        transform: skewX(-45deg) translate(-11px, 30px);
+        z-index: 100;
+    }
+    
+    .isometric-content {
+        position: absolute;
+        inset: 0;
+        padding: 30px;
+        z-index: 50; 
+        text-align: center;
+        color: #333;
+    }
+    
+    /* Ensure only the front cover is visible, and forced full-width for isometric view */
+    #book-wrapper[data-state="flat"] #flipbook .page:first-child { 
+        opacity: 1; 
+        width: 100%; 
+    }
+    #book-wrapper[data-state="flat"] #flipbook .page:first-child .left-area {
+        display: none; 
+    }
+    #book-wrapper[data-state="flat"] #flipbook .page:first-child .right-area {
+        width: 100%; 
+    }
+    #book-wrapper[data-state="flat"] #flipbook .page:not(:first-child) {
+        opacity: 0; 
+    }
+    
+    /* ================================================= */
+    /* === STATE 2: COVER (Rises & Straightens) - Showing the full cover === */
+    /* ================================================= */
+
+    #book-wrapper[data-state="cover"] {
+        cursor: pointer;
+        width: 85vw; 
+        height: 82vh;
+        max-width: 1200px; 
+        max-height: 900px;
+    }
+
+    #book-wrapper[data-state="cover"] #flipbook {
+        transform: rotateX(0deg) rotateZ(0deg) scale(1);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.45);
+        border-left: none; 
+        border-radius: 8px; 
+        padding: 0; 
+        width: 76%;
+        height: 85%;
+        min-width: 520px;
+        overflow: hidden;
+        pointer-events: none; 
+    }
+    
+    #book-wrapper[data-state="cover"] #flipbook:before,
+    #book-wrapper[data-state="cover"] #flipbook:after,
+    #book-wrapper[data-state="cover"] .isometric-content {
+        content: none;
+        display: none;
+    }
+    
+    #book-wrapper[data-state="cover"] #book-spine {
+        opacity: 1;
+    }
+    
+    /* Ensure only the cover page is visible and full size */
+    #book-wrapper[data-state="cover"] #flipbook .page:first-child { 
+        opacity: 1; 
+        width: 100% !important; 
+        transform: none !important; 
+    }
+    #book-wrapper[data-state="cover"] #flipbook .page:first-child .left-area {
+        display: none; 
+    }
+    #book-wrapper[data-state="cover"] #flipbook .page:first-child .right-area {
+        width: 100%; 
+    }
+    
+    #book-wrapper[data-state="cover"] #flipbook .page:not(:first-child) {
+        opacity: 0; 
+    }
+
+    /* ================================================= */
+    /* === STATE 3: OPEN (Turn.js Initialized) === */
+    /* ================================================= */
+    
+    #book-wrapper[data-state="open"] {
+        cursor: default;
+    }
+
+    #book-wrapper[data-state="open"] #flipbook {
+        transform: none; 
+        pointer-events: auto;
+    }
+    
+    #book-wrapper[data-state="open"] #flipbook .page {
+        opacity: 1; /* Turn.js handles opacity from now on */
+    }
+    
+    /* Restore the split-page layout for the inner cover */
+    #book-wrapper[data-state="open"] #flipbook .page:first-child .left-area {
+        display: flex; 
+    }
+    #book-wrapper[data-state="open"] #flipbook .page:first-child .right-area {
+        width: 50%; 
+    }
+
+    /* Navigation is now visible and clickable */
+    #book-wrapper[data-state="open"] #nav-left,
+    #book-wrapper[data-state="open"] #nav-right {
+        pointer-events: auto;
+        opacity: 0.15; /* Make them visible but subtle */
+    }
+    #book-wrapper[data-state="open"] #nav-left:hover,
+    #book-wrapper[data-state="open"] #nav-right:hover {
+        opacity: 0.35;
+    }
+  </style>
+</head>
+<body>
+  <div id="book-wrapper" data-state="flat">
+    <div id="book-shadow" aria-hidden="true"></div>
+    <div id="book-spine" aria-hidden="true"></div>
+
+    <div id="flipbook" role="application" aria-label="Interactive flipbook">
+      <div class="isometric-content">
+          <h2 style="margin-top: 100px; font-size: 25px;">🖤HAPPY BIRTHDAY ENDE KUNJE😘💜</h2>
+          <img src="images/2.jpg" alt="Birthday Cover" style="width: 220px; height: auto; border-radius: 10px; margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+          <p style="font-size: 16px;"></p>
+      </div>
+      
+      <div class="page">
+        <div class="page-inner">
+          <img src="images/17.jpg" alt="Cover Image" class="page-image">
+          <!-- <div class="left-area img" style="background-image: url('https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&w=900&q=80');"></div> -->
+          <div class="right-area">
+            <div class="text-block" style="text-align:center;">
+              
+              <p style="font-size:1.02rem">Happy birthday my sexy little grumpy babyyyy 😘😘😘...angane it's been 2 years since we metttttttt ykkk.... Ever since I met you life has been a roller coaster for meee one day happy aarikum pinne the next day maybe upset about something pinne the next day you'll make me mad and then you'll make me happy again or horny aaaaaaaa 😌</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page">
+        <div class="page-inner">
+          <div class="left-area">
+            <div class="text-block" style="text-align: center;">
+              <!-- <h2>Dedication</h2> -->
+              <p>can't predict what the next moment might be like with you 😵‍💫😵 i still remember the day we met kunjee.... I randomly added you along with few others pakshe raville when i woke up dhaaaa you've added me back and even texted a 'Hi' angane we started from thereee.... We spoke for a while bcoz you were awake at that time and then you went to sleep but you were interested in talking to me tho...</p>
+            </div>
+          </div>
+          <img src="images/3.jpg" alt="Cover Image" class="page-image">
+          <!-- <div class="right-area img" style="background-image: url('https://images.unsplash.com/photo-1473181488821-2d23949a045a?auto=format&fit=crop&w=900&q=80');"></div> -->
+        </div>
+      </div>
+
+      <div class="page">
+        <div class="page-inner">
+          <div class="left-area">
+            <div class="text-block">
+              <!-- <h2>Chapter 1: The Descent</h2> -->
+               
+              <p>Pinne you woke up and texted and i was excited and waiting for your text alsooo 🤭 annitu u texted and sent a snap and went to work ..... Endoo i got close to you and fell for you Pettanu.... I'm not saying things are the same rn but yeah you coming into my life changed me a little bit ......</p>
+            </div>
+          </div>
+          <img src="images/4.jpg" alt="Cover Image" class="page-image">
+          <!-- <div class="right-area img" style="background-image: url('https://images.unsplash.com/photo-1517816743773-6e0fd518b4a6?auto=format&fit:crop&w=900&q=80');"></div> -->
+        </div>
+      </div>
+
+      <div class="page">
+        <div class="page-inner">
+          <img src="images/5.jpg" alt="Cover Image" class="page-image">
+          <!-- <div class="left-area img" style="background-image: url('https://images.unsplash.com/photo-1481239853924-f7b587a6c98d?auto=format&fit:crop&w=900&q=80');"></div> -->
+          <div class="right-area">
+            <div class="text-block">
+              <!-- <h2>Chapter 2: Echoes</h2> -->
+              <p>Everytime i thought I was gonna lose you from my life i used to cry a lottttt 🥺 buttt I'm not saying this to hurt you or anything but things are different now.... It's the way you've beenn tbh and enniku idk.... I have lost a little bit of feelings for you and i just feel meh nowadays....</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page">
+        <div class="page-inner">
+          <div class="left-area">
+            <div class="text-block">
+              <!-- <h2>Chapter 3: The Call</h2> -->
+              <p>i really wish you were mine and you had feelings for me bcoz if you did ik you'd be different and you would put my happiness first and you would have cared whether things bothered me or not and i am ngl i was the happiest when you had feelings for me 🙂 i used to barely sleep those days ykk... </p>
+            </div>
+          </div>
+          <img src="images/6.jpg" alt="Cover Image" class="page-image">
+          <!-- <div class="right-area img" style="background-image: url('https://images.unsplash.com/photo-1533088927429-c0f16f5540be?auto=format&fit:crop&w=900&q=80');"></div> -->
+        </div>
+      </div><div class="page">
+        <div class="page-inner">
+          <div class="left-area">
+            <div class="text-block">
+              <!-- <h2>Chapter 3: The Call</h2> -->
+              <p>Almost everyday i used to sleep at 1 or 2 or 3 or even 4 or 5 and then I'd wake up at 7 to go to college and the funny part was I used to be active and like energetic and i used to be in college the whole dayy right with classes and assignments okke and still i used to come back and wait all night for you to wake up okke and even after reaching college i used to go to that class and call you...</p>
+            </div>
+          </div>
+          <img src="images/7.jpg" alt="Cover Image" class="page-image">
+          <!-- <div class="right-area img" style="background-image: url('https://images.unsplash.com/photo-1533088927429-c0f16f5540be?auto=format&fit:crop&w=900&q=80');"></div> -->
+        </div>
+
+      </div><div class="page">
+        <div class="page-inner">
+          <div class="left-area">
+            <div class="text-block">
+              <!-- <h2>Chapter 3: The Call</h2> -->
+              <p>aa class ippam staffroom aayi..... Even during class i used to keep looking at my phone and replying back ... I really miss all that 🙂.... Idk what's gonna happen between us but i do have a lot of really good memories with you....ippam thanne when I'm writing this.... It's rn it's 2:43am here and we just spoke rn and i asked if you don't care whether i have feelings for you or not and you said "No i don't care" .... Ik none of this is exactly happy happy whatever I'm writing but it's hard to write anything happy happy when I'm crying..... </p>
+            </div>
+          </div>
+          <img src="images/8.jpg" alt="Cover Image" class="page-image">
+          <!-- <div class="right-area img" style="background-image: url('https://images.unsplash.com/photo-1533088927429-c0f16f5540be?auto=format&fit:crop&w=900&q=80');"></div> -->
+        </div>
+      </div><div class="page">
+        <div class="page-inner">
+          <div class="left-area">
+            <div class="text-block">
+              <!-- <h2>Chapter 3: The Call</h2> -->
+              <p>I really tried a lot da..... But you just don't care 🙂..... Will things ever get better? ..... Ik you're not exactly happy happy and all and yeah a lot has happened in your life since the day we met and i wish I could take your pain away ... Trust me I've tried a lot.... But i couldn't really take away all the pain..... Ik you're a kind hearted person and you don't like hurting anyone and yeah there are things that you don't like ... </p>
+            </div>
+          </div>
+          <img src="images/9.jpg" alt="Cover Image" class="page-image">
+          <!-- <div class="right-area img" style="background-image: url('https://images.unsplash.com/photo-1533088927429-c0f16f5540be?auto=format&fit:crop&w=900&q=80');"></div> -->
+        </div>
+      </div><div class="page">
+        <div class="page-inner">
+          <div class="left-area">
+            <div class="text-block">
+              <!-- <h2>Chapter 3: The Call</h2> -->
+              <p>Like being told what to wear okke but it really bothers me and njn endo cheyyan aaa when it bothers me ..... How much will I keep quiet about things that bother me .... Everything else I have adjusted with you but atleast i thought with dressing atleast you could adjust for me but even that you can't .... If i ask anything you won't like it and idk .... Keeping it to myself is just eating me up ...... </p>
+            </div>
+          </div>
+          <img src="images/10.jpg" alt="Cover Image" class="page-image">
+          <!-- <div class="right-area img" style="background-image: url('https://images.unsplash.com/photo-1533088927429-c0f16f5540be?auto=format&fit:crop&w=900&q=80');"></div> -->
+        </div>
+      </div><div class="page">
+        <div class="page-inner">
+          <div class="left-area">
+            <div class="text-block">
+              <!-- <h2>Chapter 3: The Call</h2> -->
+              <p>Ik you won't be jumping in happiness when you read all this and I'm sorry ... I'm just not in a great mood rn..... Or any of the other days too...... but i do think about the past a lottt kunje ..... I'm sorry I couldn't get you a gift this time ...paisa illa kunje .... If i did have money i would have brought something..... Things haven't really been great for past few months alle.... This year ig it hasn't been great ...</p>
+            </div>
+          </div>
+          <img src="images/11.jpg" alt="Cover Image" class="page-image">
+          <!-- <div class="right-area img" style="background-image: url('https://images.unsplash.com/photo-1533088927429-c0f16f5540be?auto=format&fit:crop&w=900&q=80');"></div> -->
+        </div>
+      </div><div class="page">
+        <div class="page-inner">
+          <div class="left-area">
+            <div class="text-block">
+              <!-- <h2>Chapter 3: The Call</h2> -->
+              <p>Ever since you lost feelings for me...... And ik I also I'm tired of putting in effort to make everything okay and all.... I used to be the one to do it all the time since we met but I'mm just tired now and idk ig there's no point in putting in effort when i just have to keep putting in effort and things will become the same again and again  .....  I don't really have much happy happy news to tell this time.... </p>
+            </div>
+          </div>
+          <img src="images/12.jpg" alt="Cover Image" class="page-image">
+          <!-- <div class="right-area img" style="background-image: url('https://images.unsplash.com/photo-1533088927429-c0f16f5540be?auto=format&fit:crop&w=900&q=80');"></div> -->
+        </div>
+      </div><div class="page">
+        <div class="page-inner">
+          <div class="left-area">
+            <div class="text-block">
+              <!-- <h2>Chapter 3: The Call</h2> -->
+              <p>Ik last year and the year before that you liked the paras i sent and you were happy reading them and i don't think you'll exactly be happy reading this one this time and I'm sorryyyy...i just don't really know what to write ...... Ik I'm being selfish when i say this but i wish things were back to the way it was last year..... </p>
+            </div>
+          </div>
+          <img src="images/13.jpg" alt="Cover Image" class="page-image">
+          <!-- <div class="right-area img" style="background-image: url('https://images.unsplash.com/photo-1533088927429-c0f16f5540be?auto=format&fit:crop&w=900&q=80');"></div> -->
+        </div>
+      </div><div class="page">
+        <div class="page-inner">
+          <div class="left-area">
+            <div class="text-block">
+              <!-- <h2>Chapter 3: The Call</h2> -->
+              <p>I miss being happy kunje..... I want you bcoz in 24 years  i was the happiest with you when you had feelings for me and i want that and i miss that 😭 .... Nowadays even if i sleep for 6 hours or 7 hours also i wake up gloomy and tired and grumpy too at times ... But yk how I used to wake up those times if you remember ..... I remember when sheelamama and all were here i think it was last summer .... </p>
+            </div>
+          </div>
+          <img src="images/14.jpg" alt="Cover Image" class="page-image">
+          <!-- <div class="right-area img" style="background-image: url('https://images.unsplash.com/photo-1533088927429-c0f16f5540be?auto=format&fit:crop&w=900&q=80');"></div> -->
+        </div>
+      </div><div class="page">
+        <div class="page-inner">
+          <div class="left-area">
+            <div class="text-block">
+              <!-- <h2>Chapter 3: The Call</h2> -->
+              <p>Rhea was in my room and i had no way of talking to you and i used to run to the terrace every morning chumma making up a lie and going up there to talk to you ...athum in the morningggg annitu we used to talk for a little while but not much .... I think we were having a fight maybe ...idk .... </p>
+            </div>
+          </div>
+          <img src="images/16.jpg" alt="Cover Image" class="page-image">
+          <!-- <div class="right-area img" style="background-image: url('https://images.unsplash.com/photo-1533088927429-c0f16f5540be?auto=format&fit:crop&w=900&q=80');"></div> -->
+        </div>
+      </div>
+      
+      
+
+      <div class="page">
+        <div class="page-inner">
+          <img src="images/15.jpg" alt="Cover Image" class="page-image">
+          <!-- <div class="left-area img" style="background-image: url('https://images.unsplash.com/photo-1519331379826-f10be5486c6e?auto=format&fit:crop&w=900&q=80');"></div> -->
+          <div class="right-area">
+            <div class="text-block">
+              <!-- <h2>Gallery</h2> -->
+              <p>Ik i haven't been the easiest person to be with .... I'm really sorry for all that kunje..... I'm really sorry if i made you upset with all this but nothing else is coming to my mind.... I'm really sorryyyyy 🥺💜 ohh i just learnt that when you edit messages on WhatsApp there is a 15 min limit .... 😵‍💫....i really hope you have a blessed year ahead of you kunje and may all your dreams and wishes come true 💜🖤</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page">
+        <div class="page-inner">
+          <div class="left-area">
+            <div class="text-block" style="text-align:center;">
+              <!-- <h2>The End</h2> -->
+              <p>Happy birthday babeee 😘 you have no idea how much i really love you 😘😚🥰🥹💜🖤</p>
+            </div>
+          </div>
+          <img src="images/18.jpg" alt="Cover Image" class="page-image">
+          <!-- <div class="right-area img" style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit:crop&w=900&q=80');"></div> -->
+        </div>
+      </div>
+    </div>
+
+    <div id="nav-left" class="nav-zone" title="Previous page"></div>
+    <div id="nav-right" class="nav-zone" title="Next page"></div>
+  </div>
+
+  <script>
+    $(function () {
+      const $wrapper = $("#book-wrapper");
+      const $flipbook = $("#flipbook");
+      const $navLeft = $("#nav-left");
+      const $navRight = $("#nav-right");
+      let isTurnInitialized = false;
+
+      function initializeTurn() {
+        if (isTurnInitialized) return;
+
+        // Set wrapper to the final open size
+        $wrapper.css({
+            'width': '85vw',
+            'height': '82vh',
+            'max-width': '1200px',
+            'max-height': '900px'
+        });
+        
+        // Initialize Turn.js
+        $flipbook.turn({
+          // Calculate turn size based on the final wrapper size
+          width: $flipbook.parent().width() * 0.85, 
+          height: $flipbook.parent().height() * 0.92,
+          autoCenter: true,
+          display: 'double',
+          acceleration: true,
+          gradients: true,
+          duration: 1000,
+          elevation: 120,
+        });
+        isTurnInitialized = true;
+      }
+
+      function updateTurnSize() {
+        if (isTurnInitialized) {
+          const wrap = $flipbook.parent();
+          const newW = wrap.width() * 0.85;
+          const newH = wrap.height() * 0.92;
+          $flipbook.turn("size", newW, newH);
+          $flipbook.turn("resize"); // Ensure Turn.js re-renders its pages
+        }
+      }
+
+      $wrapper.on('click touchend', function (e) {
+        // Prevent clicks on navigation from triggering the book open/close logic
+        if (e.target.classList.contains('nav-zone') || $(e.target).closest('.turn-page').length) {
+            return;
+        }
+
+        e.preventDefault();
+        const currentState = $wrapper.attr('data-state');
+
+        if (currentState === 'flat') {
+          // Transition 1: Isometric -> Straight Cover View
+          $wrapper.attr('data-state', 'cover');
+          
+        } else if (currentState === 'cover') {
+          // Transition 2: Straight Cover View -> Open Flipbook
+          $wrapper.attr('data-state', 'open');
+          
+          // Initialize Turn.js only NOW.
+          initializeTurn(); 
+
+          // Wait slightly for Turn.js to take over, then flip the page to reveal the first spread.
+          setTimeout(function () {
+            updateTurnSize();
+            // Start on page 2 (the first left page) so the cover flips open.
+            $flipbook.turn("page", 2); 
+          }, 100);
+          
+        }
+      });
+      
+      // Bind navigation clicks
+      $navLeft.on('click touchend', function (e) {
+        if ($wrapper.attr('data-state') === 'open' && isTurnInitialized) {
+          e.stopPropagation();
+          $flipbook.turn("previous");
+        }
+      });
+
+      $navRight.on('click touchend', function (e) {
+        if ($wrapper.attr('data-state') === 'open' && isTurnInitialized) {
+          e.stopPropagation();
+          $flipbook.turn("next");
+        }
+      });
+
+      $(window).on('resize', function () { updateTurnSize(); });
+
+      $(document).on('keydown', function (e) {
+        if ($wrapper.attr('data-state') === 'open' && isTurnInitialized) {
+          if (e.key === "ArrowLeft") $flipbook.turn("previous");
+          if (e.key === "ArrowRight") $flipbook.turn("next");
+        }
+      });
+    });
+    
+    
+  </script>
+
+  
+</body>
+</html>
