@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flipbook</title>
+  <title>Realistic Flipbook</title>
 
-  <!-- ✅ jQuery + Turn.js (reliable CDN) -->
+  <!-- ✅ jQuery + Turn.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/blasten/turn.js/turn.min.js"></script>
 
@@ -26,96 +26,105 @@
       justify-content: center;
     }
 
+    /* Flipbook Container */
     #flipbook {
-      width: 80vw;
-      height: 90vh;
+      width: 70vw;
+      height: 80vh;
       margin: auto;
       box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
       border-radius: 10px;
-      background: white;
       overflow: hidden;
     }
 
+    /* Page Styling */
     #flipbook .page {
-      background: #ffffff;
+      background: rgba(255, 255, 255, 0.85);
       border: none;
       display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: center;
-      text-align: center;
-      overflow: hidden;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: stretch;
+      text-align: left;
       position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.1);
+      background-image: 
+        linear-gradient(to right, rgba(0,0,0,0.05) 49.5%, rgba(255,255,255,0.4) 50%, rgba(0,0,0,0.05) 50.5%);
+      background-size: 100% 100%;
     }
 
+    /* Left-side Image */
     .page img {
-      width: 100%;
-      height: 60%;
+      width: 50%;
+      height: 100%;
       object-fit: cover;
-      border-bottom: 2px solid #ddd;
+      border-right: 1px solid rgba(0, 0, 0, 0.1);
     }
 
+    /* Right-side Text Content */
     .page-content {
-      padding: 20px;
-      height: 40%;
+      width: 50%;
+      padding: 40px;
       overflow-y: auto;
       font-size: 18px;
-      color: #333;
+      color: #222;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
-    .page h2 {
+    .page-content h2 {
       color: #1b4f72;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
     }
 
-    /* Transparent side navigation buttons */
-    .nav-btn {
+    /* Transparent half click zones */
+    .click-zone {
       position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(0, 0, 0, 0.2);
-      border: none;
-      color: white;
-      font-size: 40px;
-      padding: 10px 20px;
-      border-radius: 50%;
+      top: 0;
+      width: 50%;
+      height: 100%;
       cursor: pointer;
-      z-index: 10;
-      transition: 0.3s;
+      z-index: 20;
     }
 
-    .nav-btn:hover {
-      background: rgba(0, 0, 0, 0.4);
+    #leftZone {
+      left: 0;
     }
 
-    #prevBtn {
-      left: 20px;
+    #rightZone {
+      right: 0;
     }
 
-    #nextBtn {
-      right: 20px;
-    }
-
-    @media (max-width: 768px) {
-      #flipbook {
-        width: 95vw;
-        height: 85vh;
-      }
-      .page-content {
-        font-size: 16px;
-      }
-      .nav-btn {
-        font-size: 30px;
-        padding: 8px 15px;
-      }
-    }
-
+    /* Scrollbar */
     ::-webkit-scrollbar {
       width: 6px;
     }
     ::-webkit-scrollbar-thumb {
       background: #ccc;
       border-radius: 4px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      #flipbook {
+        width: 90vw;
+        height: 75vh;
+      }
+
+      .page {
+        flex-direction: column;
+      }
+
+      .page img, .page-content {
+        width: 100%;
+        height: 50%;
+      }
+
+      .page-content {
+        padding: 20px;
+        font-size: 16px;
+      }
     }
   </style>
 </head>
@@ -126,77 +135,75 @@
 
     <!-- Page 1 -->
     <div class="page">
-      <img src="https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&w=900&q=80" alt="Cover Image" />
+      <img src="https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&w=900&q=80" alt="Cover" />
       <div class="page-content">
         <h2>Cover Page</h2>
-        <p>Welcome to my immersive full-screen flipbook! This layout focuses on one page at a time for a cleaner reading experience.</p>
+        <p>Welcome to your elegant online book. Each page features a clean layout with image and text divided beautifully.</p>
       </div>
     </div>
 
     <!-- Page 2 -->
     <div class="page">
-      <img src="WhatsApp Image 2025-10-26 at 12.49.56_35acdf83.jpg" alt="Page 2 Image" />
+      <img src="https://images.unsplash.com/photo-1473181488821-2d23949a045a?auto=format&fit=crop&w=900&q=80" alt="Image 2" />
       <div class="page-content">
-        <h2>About This Book</h2>
-        <p>This flipbook is designed for both laptops and mobile devices. You can navigate using the side arrows or swipe on touchscreens.</p>
+        <h2>About</h2>
+        <p>This book simulates a physical book experience with smooth page-turn animations and realistic textures.</p>
       </div>
     </div>
 
     <!-- Page 3 -->
     <div class="page">
-      <img src="https://images.unsplash.com/photo-1517816743773-6e0fd518b4a6?auto=format&fit=crop&w=900&q=80" alt="Page 3 Image" />
+      <img src="https://images.unsplash.com/photo-1517816743773-6e0fd518b4a6?auto=format&fit=crop&w=900&q=80" alt="Image 3" />
       <div class="page-content">
         <h2>Chapter 1</h2>
-        <p>Start writing your story, report, or presentation here. Replace these texts and images with your own content.</p>
+        <p>Add your own chapters, notes, or even portfolio projects here. Each page can have unique images and descriptions.</p>
       </div>
     </div>
 
     <!-- Page 4 -->
     <div class="page">
-      <img src="https://images.unsplash.com/photo-1519331379826-f10be5486c6e?auto=format&fit=crop&w=900&q=80" alt="Page 4 Image" />
+      <img src="https://images.unsplash.com/photo-1519331379826-f10be5486c6e?auto=format&fit=crop&w=900&q=80" alt="Image 4" />
       <div class="page-content">
         <h2>Gallery</h2>
-        <p>Display visuals, charts, or photos with brief descriptions. The page layout is flexible for any type of content.</p>
+        <p>Showcase visuals, designs, or captured moments. It’s ideal for presentations, reports, or digital portfolios.</p>
       </div>
     </div>
 
     <!-- Page 5 -->
     <div class="page">
-      <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80" alt="Page 5 Image" />
+      <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80" alt="Image 5" />
       <div class="page-content">
         <h2>Conclusion</h2>
-        <p>Thank you for reading! This final page can include acknowledgments, references, or closing thoughts.</p>
+        <p>Thank you for exploring this interactive flipbook. You can easily edit it and deploy your own stories or content here.</p>
       </div>
     </div>
-
   </div>
 
-  <!-- Transparent side arrows -->
-  <button id="prevBtn" class="nav-btn">❮</button>
-  <button id="nextBtn" class="nav-btn">❯</button>
+  <!-- Clickable Zones -->
+  <div id="leftZone" class="click-zone"></div>
+  <div id="rightZone" class="click-zone"></div>
 
   <script>
     $(document).ready(function () {
       $("#flipbook").turn({
-        width: "80vw",
-        height: "90vh",
+        width: "70vw",
+        height: "80vh",
         autoCenter: true,
-        display: "single", // ✅ show only one page
+        display: "single",
         elevation: 50,
         gradients: true,
         duration: 1200,
       });
 
-      // Button navigation
-      $("#prevBtn").click(function () {
+      // Clickable zones for navigation
+      $("#leftZone").click(function () {
         $("#flipbook").turn("previous");
       });
-      $("#nextBtn").click(function () {
+      $("#rightZone").click(function () {
         $("#flipbook").turn("next");
       });
     });
   </script>
 </body>
 </html>
-
 
